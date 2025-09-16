@@ -1,0 +1,29 @@
+{# movies/templates/movies/top_comments.html #}
+{% extends 'base.html' %}
+{% block content %}
+<div class="container p-3">
+  <h2>Top Comments (by CAPITAL letters)</h2>
+  <hr>
+  {% if reviews %}
+    <ul class="list-group">
+      {% for r in reviews %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+          <div class="me-auto">
+            <div>
+              <strong>{{ r.user.username }}</strong> on
+              <a href="{% url 'movies.show' id=r.movie.id %}">{{ r.movie.name }}</a>
+              <small class="text-muted">{{ r.date|date:"Y-m-d H:i" }}</small>
+            </div>
+            <div>{{ r.comment }}</div>
+          </div>
+          <div class="text-end">
+            <small class="text-muted">{{ r.capitals }} CAPITALS</small>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No comments yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

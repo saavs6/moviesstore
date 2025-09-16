@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect,get_object_or_404
 from .models import Movie, Review
 from django.contrib.auth.decorators import login_required
+from django.db.models.functions import Length, Lower
 
 # Create your views here.
 def index(request):
@@ -61,3 +62,12 @@ def delete_review(request, id, review_id):
         user=request.user)
     review.delete()
     return redirect('movies.show', id=id)
+
+def top_comments(request):
+    reviews = Review.objects.select_related('user', 'movie').all()
+    # Add capitals attribute manually
+    for r in reviews:
+        r.capitals = sum(1 for ch in r.comment if ch.isupper())
+    # Sort Python-side
+    reviews = sorted(reviews, key=lambda r: (-r.capitals, -r.date.timestamp()))
+    return render(request, 'movies/top_comments.html', {'reviews': reviews})
