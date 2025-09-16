@@ -2,17 +2,23 @@ from django.shortcuts import render, redirect,get_object_or_404
 from .models import Movie, Review
 from django.contrib.auth.decorators import login_required
 from django.db.models.functions import Length, Lower
+from django.db.models import Q
 
 # Create your views here.
 def index(request):
     search_term = request.GET.get('search')
+    movies = Movie.objects.all()
+
     if search_term:
-        movies = Movie.objects.filter(name__icontains=search_term)
-    else:
-        movies = Movie.objects.all()
-    template_data = {}
-    template_data['title'] = 'Movies'
-    template_data['movies'] = Movie.objects.all()
+        movies = movies.filter(name__icontains=search_term)
+
+    # Only show in-stock or unlimited (amount_left is NULL)
+    movies = movies.filter(Q(amount_left__isnull=True) | Q(amount_left__gt=0))
+
+    template_data = {
+        'title': 'Movies',
+        'movies': movies,
+    }
     return render(request, 'movies/index.html', {'template_data': template_data})
 
 def show(request, id):
@@ -71,3 +77,4 @@ def top_comments(request):
     # Sort Python-side
     reviews = sorted(reviews, key=lambda r: (-r.capitals, -r.date.timestamp()))
     return render(request, 'movies/top_comments.html', {'reviews': reviews})
+

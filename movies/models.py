@@ -8,6 +8,21 @@ class Movie(models.Model):
     price = models.IntegerField()
     description = models.TextField()
     image = models.ImageField(upload_to='movie_images/')
+    amount_left = models.PositiveIntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return str(self.id) + ' - ' + self.name
+
+    @property
+    def in_stock(self) -> bool:
+        """True if unlimited (None) or > 0."""
+        return self.amount_left is None or self.amount_left > 0
+
+    def decrease_stock(self, qty: int = 1):
+        """Decrease stock if tracked; clamp at 0."""
+        if self.amount_left is not None and self.amount_left > 0:
+            self.amount_left = max(0, self.amount_left - int(qty))
+            self.save(update_fields=['amount_left'])
     def __str__(self):
         return str(self.id) + ' - ' + self.name
 
